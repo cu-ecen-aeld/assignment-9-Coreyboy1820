@@ -35,10 +35,11 @@ GetFilePathForModule() {
 case "$1" in
   start)
     depmod -a $(uname -r)
+
     currentModule="hello"
     echo "Load $currentModule module, exit on failure"
     filePath=$(GetFilePathForModule "$currentModule")
-    modprobe $currentModule.ko || exit 1
+    modprobe $currentModule || exit 1
 
     currentModule="faulty"
     echo "Load $currentModule module, exit on failure"
