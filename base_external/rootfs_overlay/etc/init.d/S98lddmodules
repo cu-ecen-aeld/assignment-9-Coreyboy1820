@@ -29,7 +29,7 @@ LoadDevice() {
 }
 
 GetFilePathForModule() {
-  echo "/lib/modules/$(uname -r)/$1.ko"
+  echo "/lib/modules/$(uname -r)/extra/$1.ko"
 }
 
 case "$1" in
