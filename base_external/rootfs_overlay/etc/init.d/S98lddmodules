@@ -10,7 +10,7 @@ LoadDevice() {
     device=$1
     major=$2
     minor=$3
-    mode="664"
+    mode="666"
 
     echo "module $module, device $device, major $major, minor $minor"
 
@@ -32,8 +32,7 @@ GetFilePathForModule() {
   echo "/lib/modules/$(uname -r)/extra/$1.ko"
 }
 
-case "$1" in
-  start)
+StartAssignment7Modules() {
     currentModule="hello"
     echo "Load $currentModule module, exit on failure"
     filePath=$(GetFilePathForModule "$currentModule")
@@ -43,6 +42,14 @@ case "$1" in
     echo "Load $currentModule module, exit on failure"
     filePath=$(GetFilePathForModule "$currentModule")
     insmod "$filePath"
+    echo "Get the major number (allocated with allocate_chrdev_region) from /proc/devices"
+    major=$(awk "\$2==\"$currentModule\" {print \$1}" /proc/devices)
+    LoadDevice $currentModule $major 0
+
+    currentModule="aesdchar"
+    echo "Load $currentModule module, exit on failure"
+    filePath=$(GetFilePathForModule "$currentModule")
+    modprobe $currentModule
     echo "Get the major number (allocated with allocate_chrdev_region) from /proc/devices"
     major=$(awk "\$2==\"$currentModule\" {print \$1}" /proc/devices)
     LoadDevice $currentModule $major 0
@@ -75,12 +82,43 @@ case "$1" in
     LoadDevice ${currentModule}wuid $major "10"
 
     LoadDevice ${currentModule}priv $major "11"
+    
+}
 
+StartAssignment8Modules() {
+    currentModule="aesdchar"
+    echo "Load $currentModule module, exit on failure"
+    filePath=$(GetFilePathForModule "$currentModule")
+    modprobe $currentModule
+    echo "Get the major number (allocated with allocate_chrdev_region) from /proc/devices"
+    major=$(awk "\$2==\"$currentModule\" {print \$1}" /proc/devices)
+    LoadDevice $currentModule $major 0
+
+    while [ ! -c /dev/aesdchar ]; do
+      echo "Waiting for /dev/aesdchar to become available..."
+      sleep 1
+    done
+
+}
+
+case "$1" in
+  start)
+
+    StartAssignment7Modules
+
+    StartAssignment8Modules
+    
     echo "."
+
     ;;
   stop)
     currentModule="hello"
     rmmod $currentModule
+
+    currentModule="aesdchar"
+    currentDevice=$currentModule
+    rmmod $currentModule
+    rm -f /dev/${currentDevice}
 
     currentModule="scull"
     currentDevice="scull"

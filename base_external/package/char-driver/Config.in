@@ -1,0 +1,5 @@
+config BR2_PACKAGE_CHAR_DRIVER
+	bool "char-driver"
+	depends on BR2_LINUX_KERNEL
+	help
+        For testing the char driver and help
